@@ -44,9 +44,18 @@
             margin-bottom: 20px; /* Add margin to the bottom of the navbar */
         }
 
-        .navbar .nav-link {
-            color: white;
+        .navbar a:link,
+            .navbar a:visited {
+            color: white; /* Unvisited link color */
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
         }
+
+        .navbar a:hover {
+            color: gray; /* Hovered link color */
+        }
+
 
         .list-group-item {
             background-color: #222222; /* Change the background color of list items */

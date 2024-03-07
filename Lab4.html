@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Confirmation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Aquatico&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #222222;
+            color: white;
+            font-family: 'Aquatico', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        #banner {
+            background-image: url('Lab4 Banner.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            height: 300px; /* Set the height of the banner */
+        }
+
+        .jumbotron {
+            background-color: #1d1d1d; /* Adjust the opacity as needed */
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #container {
+            margin: 0 auto;
+            width: 50%;
+            text-align: left;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        label, button, input {
+            background-color: rgba(66, 66, 66, 0.849); /* Adjust the opacity as needed */
+            color: white; /* Text color */
+            padding: 7.5px;
+            display: block;
+            margin: 15px auto;
+            width: fit-content;
+            font-size: 150%;
+        }
+
+        button {
+            background-color: rgba(66, 66, 66, 0.849); 
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 150%;
+        }
+
+        #confirmation {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="banner"></div>
+    <div class="jumbotron">
+        <h1 class="display-4">Welcome To Sami's Fish Emporium</h1>
+    </div>
+    <div id="container">
+        <form id="orderForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required style="width: 300px;">
+            
+            <label for="item">Item:</label>
+            <input list="itemList" id="item" required style="width: 300px;">
+            <datalist id="itemList">
+                <option value="Salmon">
+                <option value="Carp">
+                <option value="Bass">
+                <option value="Goldfish">
+                <option value="Beta Fish">
+            </datalist>
+            
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" min="1" max="99" required style="width: 75px;">
+            
+            <button type="button" onclick="submitOrder()">Submit Order</button>
+        </form>
+        
+        <div id="confirmation">
+            <h2 id="greeting"></h2>
+            <p id="order-details"></p>
+        </div>
+    </div>
+
+    <script>
+        function submitOrder() {
+            let name = document.getElementById("name").value;
+            let item = document.getElementById("item").value;
+            let quantity = parseInt(document.getElementById("quantity").value);
+
+            let today = new Date();
+            let hour = today.getHours();
+            let greeting = "Good ";
+            if (hour < 12) {
+                greeting += "Morning";
+            } else if (hour < 18) {
+                greeting += "Afternoon";
+            } else {
+                greeting += "Evening";
+            }
+            greeting += `, ${name}! Thank you for ordering.`;
+
+            let arrivalDate = new Date(today);
+            arrivalDate.setDate(today.getDate() + 7);
+
+            document.getElementById("greeting").innerText = greeting;
+            document.getElementById("order-details").innerText = `You ordered ${quantity} ${item}(s). Your order is expected to arrive on ${arrivalDate.toDateString()}.`;
+
+            document.getElementById("orderForm").style.display = "none";
+            document.getElementById("confirmation").style.display = "block";
+        }
+    </script>
+</body>
+</html>

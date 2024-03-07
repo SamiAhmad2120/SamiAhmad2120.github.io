@@ -70,24 +70,8 @@
         <h1 class="display-4">Welcome To Sami's Fish Emporium</h1>
     </div>
     <div id="container">
-        <form id="orderForm">
-            <label for="name">Name:</label>
-            <input type="text" id="name" required style="width: 300px;">
-            
-            <label for="item">Item:</label>
-            <input list="itemList" id="item" required style="width: 300px;">
-            <datalist id="itemList">
-                <option value="Salmon">
-                <option value="Carp">
-                <option value="Bass">
-                <option value="Goldfish">
-                <option value="Beta Fish">
-            </datalist>
-            
-            <label for="quantity">Quantity:</label>
-            <input type="number" id="quantity" min="1" max="99" required style="width: 75px;">
-            
-            <button type="button" onclick="submitOrder()">Submit Order</button>
+        <form id="orderForm" onsubmit="return false;">
+            <button onclick="submitOrder()">Place Order</button>
         </form>
         
         <div id="confirmation">
@@ -98,9 +82,9 @@
 
     <script>
         function submitOrder() {
-            let name = document.getElementById("name").value;
-            let item = document.getElementById("item").value;
-            let quantity = parseInt(document.getElementById("quantity").value);
+            let name = prompt("Please enter your name:");
+            let item = prompt("Please enter the item you would like to order:");
+            let quantity = parseInt(prompt("Please enter the quantity:"));
 
             let today = new Date();
             let hour = today.getHours();

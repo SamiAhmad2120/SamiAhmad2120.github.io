@@ -1,30 +1,27 @@
-document.getElementById('fetchData').addEventListener('click', function() {
+document.getElementById('loadFacts').addEventListener('click', function() {
     fetch('https://brianobruno.github.io/cats.json')
         .then(response => response.json())
         .then(data => {
-            updateTable(data.facts);
-            updateImage(data.picture);
+            // Sort facts by factId
+            data.facts.sort((a, b) => a.factId - b.factId);
+
+            // Populate table
+            const table = document.getElementById('factsTable');
+            // Clear existing table rows except the header
+            table.innerHTML = '<tr><th>Fact ID</th><th>Fact</th></tr>';
+            data.facts.forEach(fact => {
+                const row = table.insertRow(-1);
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                cell1.innerHTML = fact.factId;
+                cell2.innerHTML = fact.text;
+            });
+
+            // Update image
+           
+            const imgElement = document.getElementById('catPhoto');
+            imgElement.src = data.catPhoto;
+            console.log(data.catPhoto)
         })
-        .catch(error => console.error('Error fetching data:', error));
+        .catch(error => console.error('Error fetching data: ', error));
 });
-
-function updateTable(facts) {
-    const table = document.getElementById('factsTable');
-    // Clear existing rows except the header
-    while (table.rows.length > 1) {
-        table.deleteRow(1);
-    }
-    // Add new rows
-    facts.forEach(fact => {
-        const row = table.insertRow(-1);
-        const cell1 = row.insertCell(0);
-        const cell2 = row.insertCell(1);
-        cell1.textContent = fact.factId;
-        cell2.textContent = fact.fact;
-    });
-}
-
-function updateImage(pictureUrl) {
-    document.getElementById('catImage').src = pictureUrl;
-}
-

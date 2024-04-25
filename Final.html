@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Project</title>
+    <style>
+        #gameDetails img {
+            width: 400px; /* Larger image size */
+        }
+    </style>
+</head>
+<body>
+    <h1>Search for Games</h1>
+    <input type="text" id="searchQuery" placeholder="Enter game name">
+    <button onclick="fetchGames()">Search</button>
+    <div id="gamesList"></div>
+    <div id="gameDetails"></div>
+
+    <script>
+        async function fetchGames() {
+            const searchQuery = document.getElementById('searchQuery').value;
+            const apiKey = '361cedb6f506437f902335be6ca5050b';
+            const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${searchQuery}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayGames(data.results);
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+
+        function displayGames(games) {
+            const container = document.getElementById('gamesList');
+            container.innerHTML = ''; // Clear previous results
+            games.forEach(game => {
+                const element = document.createElement('div');
+                const link = document.createElement('a');
+                link.href = "#";
+                link.innerHTML = `<strong>${game.name}</strong> (Released: ${game.released})`;
+                link.onclick = () => showDetails(game);
+                element.appendChild(link);
+                container.appendChild(element);
+            });
+        }
+
+        async function showDetails(game) {
+            const apiKey = '361cedb6f506437f902335be6ca5050b';
+            const url = `https://api.rawg.io/api/games/${game.id}?key=${apiKey}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                displayGameDetails(data);
+            } catch (error) {
+                console.error('Error fetching game details:', error);
+            }
+        }
+
+        function displayGameDetails(game) {
+            const container = document.getElementById('gameDetails');
+            container.innerHTML = `
+                <h2>${game.name}</h2>
+                <img src="${game.background_image}" alt="${game.name}">
+                <p>Released: ${game.released}</p>
+                <p>Metacritic Score: ${game.metacritic}</p>
+                <p>Publisher: ${game.publishers.map(pub => pub.name).join(', ')}</p>
+                <p>Developer: ${game.developers.map(dev => dev.name).join(', ')}</p>
+            `;
+        }
+    </script>
+</body>
+</html>

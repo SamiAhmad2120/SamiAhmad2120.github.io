@@ -4,77 +4,317 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Final Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        #gameDetails img {
-            width: 400px; /* Larger image size */
+        .jumbotron {
+            background-color: #222222;
+            color: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        body {
+            background-color: #1d1d1d;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .navbar, .footer {
+            background-color: #222222;
+            color: white;
+            padding: 10px 0;
+        }
+        .navbar-nav {
+            width: 100%;
+            justify-content: center;
+        }
+        .navbar a {
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+        }
+        .navbar a:hover {
+            color: gray;
+        }
+    
+        .game-card {
+            background-color: #333;
+            color: white;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .game-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .modal-content {
+            background-color: #333;
+            color: white;
+        }
+        .modal-header, .modal-footer {
+            border-color: #444;
+        }
+        .btn-close {
+            background-color: white;
+            border-radius: 50%;
+        }
+        .btn-primary {
+            background-color: #222;
+            border-color: #222;
+        }
+        .btn-primary:hover {
+            background-color: #333;
+            border-color: #333;
+        }
+        body, .modal-content {
+            font-family: Arial, sans-serif;
+        }
+        /* Additional styles for genre dropdown */
+        .dropdown-menu {
+            background-color: #292929; /* Slightly darker than the card background */
+        }
+        .dropdown-item {
+            color: white; /* Ensures text is white */
+        }
+        .dropdown-item:hover {
+            background-color: #404040; /* Slightly lighter on hover for better UX */
         }
     </style>
+    
 </head>
 <body>
-    <h1>Search for Games</h1>
-    <input type="text" id="searchQuery" placeholder="Enter game name">
-    <button onclick="fetchGames()">Search</button>
-    <div id="gamesList"></div>
-    <div id="gameDetails"></div>
 
-    <script>
-        async function fetchGames() {
-            const searchQuery = document.getElementById('searchQuery').value;
-            const apiKey = '361cedb6f506437f902335be6ca5050b';
-            const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${searchQuery}`;
+<div class="jumbotron">
+    <h1 class="display-4">Game Hub</h1>
+    <p class="lead">A Place To Read Up On Games</p>
+</div>
 
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                displayGames(data.results);
-            } catch (error) {
-                console.error('There was a problem with the fetch operation:', error);
-            }
-        }
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <div class="navbar-nav">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Genres
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown" id="genreDropdown">
+                    <!-- Genres will be loaded here by JavaScript -->
+                </ul>
+            </li>
+        </div>
+    </div>
+</nav>
 
-        function displayGames(games) {
-            const container = document.getElementById('gamesList');
-            container.innerHTML = ''; // Clear previous results
-            games.forEach(game => {
-                const element = document.createElement('div');
-                const link = document.createElement('a');
-                link.href = "#";
-                link.innerHTML = `<strong>${game.name}</strong> (Released: ${game.released})`;
-                link.onclick = () => showDetails(game);
-                element.appendChild(link);
-                container.appendChild(element);
+
+
+
+<div class="modal fade" id="gameInfoModal" tabindex="-1" aria-labelledby="gameInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gameInfoModalLabel">Game Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-3" id="popularGamesContainer">
+    <h2>Popular Games</h2>
+    <div class="row" id="popularGames"></div>
+</div>
+    <h2>Action Games</h2>
+    <div class="row" id="actionGames"></div>
+</div>
+
+<footer class="footer mt-auto py-3 text-center">
+    <div>
+        <span>&copy; 2024 Sami Ahmad. All Rights Reserved.</span>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const apiKey = '361cedb6f506437f902335be6ca5050b';  // Your RAWG API key
+    const baseUrl = 'https://api.rawg.io/api/games';
+
+    document.addEventListener('DOMContentLoaded', function() {
+    fetchGenres();  // Fetch and display genres
+    fetchGames('popularGames', '-added');  // Fetch and display popular games
+});
+
+
+async function fetchGenres() {
+    const genreUrl = `https://api.rawg.io/api/genres?key=${apiKey}`;
+    try {
+        const response = await fetch(genreUrl);
+        const data = await response.json();
+        const genreDropdown = document.getElementById('genreDropdown');
+        data.results.forEach(genre => {
+            const genreItem = document.createElement('li');
+            const genreLink = document.createElement('a');
+            genreLink.className = 'dropdown-item';
+            genreLink.href = `#${genre.slug}`;
+            genreLink.textContent = genre.name;
+            genreLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default anchor behavior
+                fetchGamesByGenre(genre.id, genre.name);
             });
-        }
+            genreItem.appendChild(genreLink);
+            genreDropdown.appendChild(genreItem);
+        });
+    } catch (error) {
+        console.error('Failed to fetch genres:', error);
+    }
+}
 
-        async function showDetails(game) {
-            const apiKey = '361cedb6f506437f902335be6ca5050b';
-            const url = `https://api.rawg.io/api/games/${game.id}?key=${apiKey}`;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                displayGameDetails(data);
-            } catch (error) {
-                console.error('Error fetching game details:', error);
-            }
-        }
 
-        function displayGameDetails(game) {
-            const container = document.getElementById('gameDetails');
-            container.innerHTML = `
-                <h2>${game.name}</h2>
-                <img src="${game.background_image}" alt="${game.name}">
-                <p>Released: ${game.released}</p>
-                <p>Metacritic Score: ${game.metacritic}</p>
-                <p>Publisher: ${game.publishers.map(pub => pub.name).join(', ')}</p>
-                <p>Developer: ${game.developers.map(dev => dev.name).join(', ')}</p>
+
+async function fetchGames(containerId, ordering = 'rating', genres = '') {
+    const url = `${baseUrl}?key=${apiKey}&ordering=${ordering}${genres}`;
+    console.log('Fetching games from:', url);  // Log the URL being called
+    try {
+        const response = await fetch(url);
+        console.log('Response received:', response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Data:', data);  // Log the data received
+        displayGames(data.results, containerId);
+    } catch (error) {
+        console.error('Failed to fetch games:', error);
+    }
+}
+
+
+    async function fetchGamesByGenre(genreId, genreName) {
+    const gamesUrl = `${baseUrl}?key=${apiKey}&genres=${genreId}`;
+    try {
+        const response = await fetch(gamesUrl);
+        const data = await response.json();
+        updateJumbotron(genreName);
+        displayGames(data.results, 'actionGames');  // Ensure you have a container with id 'actionGames'
+        document.getElementById('popularGamesContainer').style.display = 'none';  // Hide Popular Games
+    } catch (error) {
+        console.error(`Failed to fetch games for genre ${genreName}:`, error);
+    }
+}
+
+function showHomePage() {
+    document.getElementById('popularGamesContainer').style.display = 'block';  // Show Popular Games
+    // Optionally clear or reset other content
+    document.querySelector('.jumbotron').innerHTML = `
+        <h1 class="display-4">Game Hub</h1>
+        <p class="lead">A Place To Read Up On Games</p>
+    `;
+    // Fetch and display popular games again if necessary
+    fetchGames('popularGames', '-added');
+    // Clear actionGames if necessary
+    document.getElementById('actionGames').innerHTML = '';
+}
+
+document.getElementById('homeLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    showHomePage();
+});
+
+
+
+function updateJumbotron(genreName) {
+    const jumbotron = document.querySelector('.jumbotron');
+    jumbotron.innerHTML = `
+        <h1 class="display-4">${genreName} Games</h1>
+        <p class="lead">Explore top games in the ${genreName} genre</p>
+    `;
+}
+
+
+function displayGames(games, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.error('No container found with ID:', containerId);
+        return;
+    }
+    container.innerHTML = '';  // Clear existing content
+    games.forEach(game => {
+        if (game.background_image) {
+            const gameElement = document.createElement('div');
+            gameElement.className = 'col-md-4';
+            gameElement.innerHTML = `
+                <div class="card game-card">
+                    <img src="${game.background_image}" class="card-img-top" alt="${game.name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${game.name}</h5>
+                        <p class="card-text">Release: ${game.released}</p>
+                        <button onclick="showGameDetails(${game.id})" class="btn btn-primary">More Info</button>
+                    </div>
+                </div>
             `;
+            container.appendChild(gameElement);
         }
-    </script>
+    });
+}
+
+    
+
+async function showGameDetails(gameId) {
+    const url = `${baseUrl}/${gameId}?key=${apiKey}`;
+    try {
+        const response = await fetch(url);
+        const game = await response.json();
+        const modalBody = document.querySelector('#gameInfoModal .modal-body');
+        
+        // Assuming you implement a function to extract or filter the English description
+        let englishDescription = extractEnglishDescription(game.description_raw || game.description);
+
+        modalBody.innerHTML = `
+            <div class="text-center">
+                <img src="${game.background_image}" class="img-fluid" alt="${game.name}">
+                <p><strong>Release Date:</strong> ${game.released}</p>
+                <p><strong>Developer:</strong> ${game.developers.map(dev => dev.name).join(', ')}</p>
+                <p><strong>Publisher:</strong> ${game.publishers.map(pub => pub.name).join(', ')}</p>
+                <p><strong>Metacritic:</strong> ${game.metacritic || 'N/A'}</p>
+                <p><strong>Description:</strong> ${englishDescription}</p>
+            </div>
+        `;
+        var myModal = new bootstrap.Modal(document.getElementById('gameInfoModal'), {
+            keyboard: false
+        });
+        myModal.show();
+    } catch (error) {
+        console.error('Failed to fetch game details:', error);
+    }
+}
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchGames('popularGames', '-added');
+        fetchGames('actionGames', '', '&genres=action');
+    });
+
+    function extractEnglishDescription(description) {
+    // Example: Assuming each language part is separated by "[end]" or similar delimiter
+    let parts = description.split("[end]");
+    // Assuming the first part is always English
+    return parts[0] || "";
+}
+
+
+</script>
+
+<a class="nav-link active" id="homeLink" href="#" aria-current="page">Home</a>
+
 </body>
 </html>

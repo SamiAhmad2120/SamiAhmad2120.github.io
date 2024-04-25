@@ -171,13 +171,35 @@
         }
     }
 
+    async function showGameDetails(gameId) {
+        const url = `${baseUrl}/${gameId}?key=${apiKey}`;
+        try {
+            const response = await fetch(url);
+            const game = await response.json();
+            const modalBody = document.querySelector('#gameInfoModal .modal-body');
+            modalBody.innerHTML = `
+                <div class="text-center">
+                    <img src="${game.background_image}" class="img-fluid" alt="${game.name}">
+                    <p><strong>Release Date:</strong> ${game.released}</p>
+                    <p><strong>Developer:</strong> ${game.developers.map(dev => dev.name).join(', ')}</p>
+                    <p><strong>Publisher:</strong> ${game.publishers.map(pub => pub.name).join(', ')}</p>
+                    <p><strong>Metacritic:</strong> ${game.metacritic || 'N/A'}</p>
+                    <p><strong>Description:</strong> ${game.description_raw || game.description}</p>
+                </div>
+            `;
+            var myModal = new bootstrap.Modal(document.getElementById('gameInfoModal'), {
+                keyboard: false
+            });
+            myModal.show();
+        } catch (error) {
+            console.error('Failed to fetch game details:', error);
+        }
+    }
+
     async function fetchGames(containerId, ordering = 'rating', genres = '') {
         const url = `${baseUrl}?key=${apiKey}&ordering=${ordering}${genres}`;
         try {
             const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
             const data = await response.json();
             displayGames(data.results, containerId);
         } catch (error) {
@@ -225,11 +247,7 @@
 
     function displayGames(games, containerId) {
         const container = document.getElementById(containerId);
-        if (!container) {
-            console.error('No container found with ID:', containerId);
-            return;
-        }
-        container.innerHTML = '';  // Clear existing content
+        container.innerHTML = '';
         games.forEach(game => {
             if (game.background_image) {
                 const gameElement = document.createElement('div');
@@ -239,7 +257,6 @@
                         <img src="${game.background_image}" class="card-img-top" alt="${game.name}">
                         <div class="card-body">
                             <h5 class="card-title">${game.name}</h5>
-                            <p class="card-text">Release: ${game.released}</p>
                             <button onclick="showGameDetails(${game.id})" class="btn btn-primary">More Info</button>
                         </div>
                     </div>
@@ -248,6 +265,7 @@
             }
         });
     }
+
 </script>
 
 </body>

@@ -36,7 +36,6 @@
         .navbar a:hover {
             color: gray;
         }
-    
         .game-card {
             background-color: #333;
             color: white;
@@ -71,20 +70,16 @@
             background-color: #333;
             border-color: #333;
         }
-        body, .modal-content {
-            font-family: Arial, sans-serif;
-        }
         .dropdown-menu {
-            background-color: #292929; /* Slightly darker than the card background */
+            background-color: #292929;
         }
         .dropdown-item {
-            color: white; /* Ensures text is white */
+            color: white;
         }
         .dropdown-item:hover {
-            background-color: #404040; /* Slightly lighter on hover for better UX */
+            background-color: #404040;
         }
     </style>
-    
 </head>
 <body>
 
@@ -96,7 +91,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
         <div class="navbar-nav">
-            <a class="nav-link active" id="homeLink" href="https://samiahmad2120.github.io/Final.html" aria-current="page">Home</a>
+            <a class="nav-link active" id="homeLink" href="#" aria-current="page">Home</a>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Genres
@@ -108,9 +103,6 @@
         </div>
     </div>
 </nav>
-
-
-
 
 <div class="modal fade" id="gameInfoModal" tabindex="-1" aria-labelledby="gameInfoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -133,8 +125,10 @@
     <h2>Popular Games</h2>
     <div class="row" id="popularGames"></div>
 </div>
-    <h2>Action Games</h2>
-    <div class="row" id="actionGames"></div>
+
+<div class="container mt-3" id="genreGamesContainer" style="display:none;">
+    <h2 id="genreTitle">Games</h2>  
+    <div class="row" id="genreGames"></div>
 </div>
 
 <footer class="footer mt-auto py-3 text-center">
@@ -145,175 +139,116 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const apiKey = '361cedb6f506437f902335be6ca5050b';  // Your RAWG API key
+    const apiKey = '361cedb6f506437f902335be6ca5050b';
     const baseUrl = 'https://api.rawg.io/api/games';
 
     document.addEventListener('DOMContentLoaded', function() {
-    fetchGenres();  // Fetch and display genres
-    fetchGames('popularGames', '-added');  // Fetch and display popular games
-});
+        fetchGenres();
+        fetchGames('popularGames', '-added');
+    });
 
-
-async function fetchGenres() {
-    const genreUrl = `https://api.rawg.io/api/genres?key=${apiKey}`;
-    try {
-        const response = await fetch(genreUrl);
-        const data = await response.json();
-        const genreDropdown = document.getElementById('genreDropdown');
-        data.results.forEach(genre => {
-            const genreItem = document.createElement('li');
-            const genreLink = document.createElement('a');
-            genreLink.className = 'dropdown-item';
-            genreLink.href = `#${genre.slug}`;
-            genreLink.textContent = genre.name;
-            genreLink.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent default anchor behavior
-                fetchGamesByGenre(genre.id, genre.name);
+    async function fetchGenres() {
+        const genreUrl = `https://api.rawg.io/api/genres?key=${apiKey}`;
+        try {
+            const response = await fetch(genreUrl);
+            const data = await response.json();
+            const genreDropdown = document.getElementById('genreDropdown');
+            data.results.forEach(genre => {
+                const genreItem = document.createElement('li');
+                const genreLink = document.createElement('a');
+                genreLink.className = 'dropdown-item';
+                genreLink.href = `#${genre.slug}`;
+                genreLink.textContent = genre.name;
+                genreLink.addEventListener('click', (e) => {
+                    e.preventDefault(); // Prevent default anchor behavior
+                    fetchGamesByGenre(genre.id, genre.name);
+                });
+                genreItem.appendChild(genreLink);
+                genreDropdown.appendChild(genreItem);
             });
-            genreItem.appendChild(genreLink);
-            genreDropdown.appendChild(genreItem);
-        });
-    } catch (error) {
-        console.error('Failed to fetch genres:', error);
-    }
-}
-
-
-
-async function fetchGames(containerId, ordering = 'rating', genres = '') {
-    const url = `${baseUrl}?key=${apiKey}&ordering=${ordering}${genres}`;
-    console.log('Fetching games from:', url);  // Log the URL being called
-    try {
-        const response = await fetch(url);
-        console.log('Response received:', response);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        } catch (error) {
+            console.error('Failed to fetch genres:', error);
         }
-        const data = await response.json();
-        console.log('Data:', data);  // Log the data received
-        displayGames(data.results, containerId);
-    } catch (error) {
-        console.error('Failed to fetch games:', error);
     }
-}
 
+    async function fetchGames(containerId, ordering = 'rating', genres = '') {
+        const url = `${baseUrl}?key=${apiKey}&ordering=${ordering}${genres}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            displayGames(data.results, containerId);
+        } catch (error) {
+            console.error('Failed to fetch games:', error);
+        }
+    }
 
     async function fetchGamesByGenre(genreId, genreName) {
-    const gamesUrl = `${baseUrl}?key=${apiKey}&genres=${genreId}`;
-    try {
-        const response = await fetch(gamesUrl);
-        const data = await response.json();
-        updateJumbotron(genreName);
-        displayGames(data.results, 'actionGames');  // Ensure you have a container with id 'actionGames'
-        document.getElementById('popularGamesContainer').style.display = 'none';  // Hide Popular Games
-    } catch (error) {
-        console.error(`Failed to fetch games for genre ${genreName}:`, error);
-    }
-}
-
-function showHomePage() {
-    document.getElementById('popularGamesContainer').style.display = 'block';  // Show Popular Games
-    // Optionally clear or reset other content
-    document.querySelector('.jumbotron').innerHTML = `
-        <h1 class="display-4">Game Hub</h1>
-        <p class="lead">A Place To Read Up On Games</p>
-    `;
-    // Fetch and display popular games again if necessary
-    fetchGames('popularGames', '-added');
-    // Clear actionGames if necessary
-    document.getElementById('actionGames').innerHTML = '';
-}
-
-document.getElementById('homeLink').addEventListener('click', (e) => {
-    e.preventDefault();
-    showHomePage();
-});
-
-
-
-function updateJumbotron(genreName) {
-    const jumbotron = document.querySelector('.jumbotron');
-    jumbotron.innerHTML = `
-        <h1 class="display-4">${genreName} Games</h1>
-        <p class="lead">Explore top games in the ${genreName} genre</p>
-    `;
-}
-
-
-function displayGames(games, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.error('No container found with ID:', containerId);
-        return;
-    }
-    container.innerHTML = '';  // Clear existing content
-    games.forEach(game => {
-        if (game.background_image) {
-            const gameElement = document.createElement('div');
-            gameElement.className = 'col-md-4';
-            gameElement.innerHTML = `
-                <div class="card game-card">
-                    <img src="${game.background_image}" class="card-img-top" alt="${game.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${game.name}</h5>
-                        <p class="card-text">Release: ${game.released}</p>
-                        <button onclick="showGameDetails(${game.id})" class="btn btn-primary">More Info</button>
-                    </div>
-                </div>
-            `;
-            container.appendChild(gameElement);
+        const gamesUrl = `${baseUrl}?key=${apiKey}&genres=${genreId}`;
+        try {
+            const response = await fetch(gamesUrl);
+            const data = await response.json();
+            updateJumbotron(genreName);  // Update the jumbotron to reflect the genre selected
+            displayGames(data.results, 'genreGames'); // Use the new container ID for genre-specific games
+            document.getElementById('popularGamesContainer').style.display = 'none';  // Hide Popular Games
+            document.getElementById('genreGamesContainer').style.display = 'block';  // Display the genre-specific games container
+            document.getElementById('genreTitle').textContent = `${genreName} Games`;  // Update the title to reflect the genre
+        } catch (error) {
+            console.error(`Failed to fetch games for genre ${genreName}:`, error);
         }
-    });
-}
-
-    
-
-async function showGameDetails(gameId) {
-    const url = `${baseUrl}/${gameId}?key=${apiKey}`;
-    try {
-        const response = await fetch(url);
-        const game = await response.json();
-        const modalBody = document.querySelector('#gameInfoModal .modal-body');
-        
-        // Assuming you implement a function to extract or filter the English description
-        let englishDescription = extractEnglishDescription(game.description_raw || game.description);
-
-        modalBody.innerHTML = `
-            <div class="text-center">
-                <img src="${game.background_image}" class="img-fluid" alt="${game.name}">
-                <p><strong>Release Date:</strong> ${game.released}</p>
-                <p><strong>Developer:</strong> ${game.developers.map(dev => dev.name).join(', ')}</p>
-                <p><strong>Publisher:</strong> ${game.publishers.map(pub => pub.name).join(', ')}</p>
-                <p><strong>Metacritic:</strong> ${game.metacritic || 'N/A'}</p>
-                <p><strong>Description:</strong> ${englishDescription}</p>
-            </div>
-        `;
-        var myModal = new bootstrap.Modal(document.getElementById('gameInfoModal'), {
-            keyboard: false
-        });
-        myModal.show();
-    } catch (error) {
-        console.error('Failed to fetch game details:', error);
     }
-}
 
+    function showHomePage() {
+        document.getElementById('popularGamesContainer').style.display = 'block'; // Show Popular Games
+        document.getElementById('genreGamesContainer').style.display = 'none'; // Hide genre-specific games
+        const jumbotron = document.querySelector('.jumbotron');
+        jumbotron.innerHTML = `
+            <h1 class="display-4">Game Hub</h1>
+            <p class="lead">A Place To Read Up On Games</p>
+        `;
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        fetchGames('popularGames', '-added');
-        fetchGames('actionGames', '', '&genres=action');
+    document.getElementById('homeLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showHomePage();
     });
 
-    function extractEnglishDescription(description) {
-    // Example: Assuming each language part is separated by "[end]" or similar delimiter
-    let parts = description.split("[end]");
-    // Assuming the first part is always English
-    return parts[0] || "";
-}
+    function updateJumbotron(genreName) {
+        const jumbotron = document.querySelector('.jumbotron');
+        jumbotron.innerHTML = `
+            <h1 class="display-4">${genreName} Games</h1>
+            <p class="lead">Explore top games in the ${genreName} genre</p>
+        `;
+    }
 
-
+    function displayGames(games, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error('No container found with ID:', containerId);
+            return;
+        }
+        container.innerHTML = '';  // Clear existing content
+        games.forEach(game => {
+            if (game.background_image) {
+                const gameElement = document.createElement('div');
+                gameElement.className = 'col-md-4';
+                gameElement.innerHTML = `
+                    <div class="card game-card">
+                        <img src="${game.background_image}" class="card-img-top" alt="${game.name}">
+                        <div class="card-body">
+                            <h5 class="card-title">${game.name}</h5>
+                            <p class="card-text">Release: ${game.released}</p>
+                            <button onclick="showGameDetails(${game.id})" class="btn btn-primary">More Info</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(gameElement);
+            }
+        });
+    }
 </script>
-
-<a class="nav-link active" id="homeLink" href="#" aria-current="page">Home</a>
 
 </body>
 </html>

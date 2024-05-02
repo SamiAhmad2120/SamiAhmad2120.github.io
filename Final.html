@@ -231,7 +231,7 @@ async function fetchGamesBySearch(query) {
             displayGames(data.results, 'popularGames');
             document.getElementById('popularGamesContainer').style.display = 'block';
             document.getElementById('genreGamesContainer').style.display = 'none';
-            updateJumbotron(`Search results for "${query}"`);
+            updateJumbotron(`Search results for "${query}"`, false);  // Pass false to exclude 'Games'
         } else {
             alert('No games found!');
         }
@@ -239,6 +239,7 @@ async function fetchGamesBySearch(query) {
         console.error('Failed to fetch games:', error);
     }
 }
+
 
     async function showGameDetails(gameId) {
         const url = `${baseUrl}/${gameId}?key=${apiKey}`;
@@ -293,13 +294,15 @@ async function fetchGamesBySearch(query) {
     });
 
 
-    function updateJumbotron(genreName) {
-        const jumbotron = document.querySelector('.jumbotron');
-        jumbotron.innerHTML = `
-            <h1 class="display-4">${genreName} Games</h1>
-            <p class="lead">Explore top games in the ${genreName} genre</p>
-        `;
-    }
+    function updateJumbotron(title, includeGamesKeyword = true) {
+    const jumbotron = document.querySelector('.jumbotron');
+    const gamesText = includeGamesKeyword ? ' Games' : '';  // Conditionally append ' Games'
+    jumbotron.innerHTML = `
+        <h1 class="display-4">${title}${gamesText}</h1>
+        <p class="lead">Explore top ${title.toLowerCase()}${gamesText.toLowerCase()}</p>
+    `;
+}
+
 
     function displayGames(games, containerId) {
         const container = document.getElementById(containerId);

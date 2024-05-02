@@ -48,6 +48,11 @@
         .navbar a:hover {
             color: gray;
         }
+
+        .search-bar {
+        width: 50%;  
+        }
+
         .game-card {
             background-color: #333;
             color: white;
@@ -119,9 +124,13 @@
                     <!-- Genres will be loaded here by JavaScript -->
                 </ul>
             </li>
+            <input type="text" id="searchInput" class="form-control me-2 search-bar" placeholder="Search Games..." aria-label="Search">
+            <button class="btn btn-outline-success" id="searchButton">Search</button>
+
         </div>
     </div>
 </nav>
+
 
 <div class="modal fade" id="gameInfoModal" tabindex="-1" aria-labelledby="gameInfoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -206,6 +215,30 @@
             console.error('Failed to fetch genres:', error);
         }
     }
+
+    document.getElementById('searchButton').addEventListener('click', async () => {
+    const query = document.getElementById('searchInput').value.trim();
+    fetchGamesBySearch(query);
+});
+
+async function fetchGamesBySearch(query) {
+    if (!query) return;
+    const url = `${baseUrl}?key=${apiKey}&search=${encodeURIComponent(query)}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.results.length) {
+            displayGames(data.results, 'popularGames');
+            document.getElementById('popularGamesContainer').style.display = 'block';
+            document.getElementById('genreGamesContainer').style.display = 'none';
+            updateJumbotron(`Search results for "${query}"`);
+        } else {
+            alert('No games found!');
+        }
+    } catch (error) {
+        console.error('Failed to fetch games:', error);
+    }
+}
 
     async function showGameDetails(gameId) {
         const url = `${baseUrl}/${gameId}?key=${apiKey}`;
